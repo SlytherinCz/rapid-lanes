@@ -12,6 +12,7 @@ module.exports = function (grunt) {
             scripts: {
                 src: [
                     'assets/js/scenes/**/*.js',
+                    'assets/js/entities/**/*.js',
                     'assets/js/utils/**/*.js',
                     'assets/js/config/services.js',
                     'assets/js/rapidLanes.js'
@@ -26,17 +27,19 @@ module.exports = function (grunt) {
                 dest: 'public/js/bundle.js'
             }
         },
-        sprite:{
-            land: {
-                src: 'assets/gfx/spritesheets/land/*.png',
-                dest: 'public/gfx/spritesheets/land.png',
-                destCss: 'public/gfx/spritesheets/land.json',
-                cssFormat: 'json_texture'
+        copy: {
+            images: {
+                files: [{expand:true,cwd:'assets/gfx/images/',src:['*'],dest:'public/gfx/images'}]
             },
-            vehicles: {
-                src: 'assets/gfx/spritesheets/vehicles/*.png',
-                dest: 'public/gfx/spritesheets/vehicles.png',
-                destCss: 'public/gfx/spritesheets/vehicles.json',
+            music: {
+                files: [{expand:true,cwd:'assets/sfx/music/',src:['*'],dest:'public/sfx/music'}]
+            }
+        },
+        sprite:{
+            textures: {
+                src: 'assets/gfx/spritesheets/*.png',
+                dest: 'public/gfx/spritesheet.png',
+                destCss: 'public/gfx/spritesheet.json',
                 cssFormat: 'json_texture'
             }
         },
@@ -53,4 +56,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-spritesmith');
     grunt.registerTask('default', ['watch']);
+    grunt.registerTask('build', ['sprite','concat']);
 };
+

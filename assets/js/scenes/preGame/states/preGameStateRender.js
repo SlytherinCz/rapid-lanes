@@ -1,3 +1,3 @@
-var mainSceneStateRender = function(){
+var preGameStateRender = function(){
     "use strict";
 };

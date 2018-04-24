@@ -1,91 +1,60 @@
-var TrafficManager = function (width, height, lanes, maxRows, minimumRowsDistance, allowedTrafficFrames) {
+var TrafficManager = function (width, height,minimumYTrafficDistance, trafficSpawner, outOfBoundsDestructor) {
     "use strict";
     this.width = width;
     this.height = height;
-    this.lanes = lanes;
-    this.rows = [];
-    this.maxRows = maxRows;
-    this.minimumRowsDistance = minimumRowsDistance;
-    this.allowedTrafficFrames = allowedTrafficFrames;
+    this.obstacles = [];
+    this.minimumYTrafficDistance = minimumYTrafficDistance;
+    this.trafficSpawner = trafficSpawner;
+    this.outOfBoundsDestructor = outOfBoundsDestructor;
 };
 
 TrafficManager.prototype.registerTrafficGroup = function (group) {
     "use strict";
     this.trafficGroup = group;
+    this.trafficSpawner.registerTrafficGroup(group);
 };
 
-TrafficManager.prototype.spawnObstacle = function (lane) {
+TrafficManager.prototype.spawnObstacle = function (difficultyLevel) {
     "use strict";
-    var obstacle = this.trafficGroup.create(lane, 0, 'vehicles');
-    obstacle.setFrame(Phaser.Utils.Array.GetRandomElement(this.allowedTrafficFrames));
-    obstacle.scaleX = 1.3;
-    obstacle.scaleY = 1.3;
-    return obstacle;
+    this.obstacles = this.obstacles.concat(this.trafficSpawner.spawn(difficultyLevel));
 };
 
-TrafficManager.prototype.gameCycle = function (difficultyMultiplier, velocityMultiplier) {
+TrafficManager.prototype.gameCycle = function (difficultyLevel,difficultyMultiplier, velocityMultiplier) {
     "use strict";
-    this.advanceTraffic(difficultyMultiplier, velocityMultiplier);
+    this.advanceTraffic(difficultyLevel,difficultyMultiplier, velocityMultiplier);
 };
 
-TrafficManager.prototype.prepareRow = function () {
-    "use strict";
-    var row = {
-        y: 0,
-        obstacles: []
-    };
-    row.obstacles.push(this.spawnObstacle(Phaser.Utils.Array.GetRandomElement(this.lanes)));
-    this.rows.push(row);
-};
 
 TrafficManager.prototype.detectCollision = function (bounds) {
     "use strict";
     var children = this.trafficGroup.getChildren();
     for (var i = 0; i < children.length; i++) {
         if (Phaser.Geom.Intersects.RectangleToRectangle(bounds, children[i].getBounds())) {
-            console.log('collision detected');
             return true;
         }
     }
     return false;
 };
 
-TrafficManager.prototype.advanceTraffic = function (difficultyMultiplier, velocityMultiplier) {
+TrafficManager.prototype.advanceTraffic = function (difficultyLevel,difficultyMultiplier, velocityMultiplier) {
     "use strict";
-    for (var i = 0; i < this.rows.length; i++) {
+    for (var i = 0; i < this.obstacles.length; i++) {
         var outOfBounds = false;
-        this.advanceCoordinateY(this.rows[i], velocityMultiplier);
-        if (this.rows[i].y > this.height) {
-            outOfBounds = true;
-        }
-        for (var ii = 0; ii < this.rows[i].obstacles.length; ii++) {
-            this.advanceCoordinateY(this.rows[i].obstacles[ii], velocityMultiplier);
-            if (outOfBounds) {
-                this.rows[i].obstacles[ii].destroy();
-                this.rows[i].obstacles.splice(ii, 1);
-            }
-        }
-        if (outOfBounds) {
-            this.rows.splice(i, 1);
-        }
+        this.obstacles[i].advance(velocityMultiplier);
+
     }
-    if (this.allowedToSpawnRow()) {
-        this.prepareRow(difficultyMultiplier);
+    if (this.allowedToSpawnObstacle()) {
+        this.spawnObstacle(difficultyLevel);
     }
+
+    this.outOfBoundsDestructor.destroyIfOutOfBounds(this.obstacles);
 };
 
-TrafficManager.prototype.allowedToSpawnRow = function () {
+TrafficManager.prototype.allowedToSpawnObstacle = function () {
     "use strict";
-    var slotAvailable = this.rows.length <= this.maxRows;
     var minimumDistanceMet = true;
-    for (var i = 0; i < this.rows.length; i++) {
-        minimumDistanceMet = minimumDistanceMet && this.rows[i].y > this.minimumRowsDistance;
+    for (var i = 0; i < this.obstacles.length; i++) {
+        minimumDistanceMet = minimumDistanceMet && this.obstacles[i].getBounds().y > this.minimumYTrafficDistance;
     }
-    return slotAvailable && minimumDistanceMet;
+    return minimumDistanceMet;
 };
-
-TrafficManager.prototype.advanceCoordinateY = function (obj, velocityMultiplier) {
-    "use strict";
-    obj.y += 1 * velocityMultiplier;
-};
-

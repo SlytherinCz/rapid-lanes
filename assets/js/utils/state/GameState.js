@@ -1,4 +1,4 @@
-var GameState = function(trafficManager,difficulty,healthBar){
+var GameState = function(player,trafficManager,difficulty,healthBar,playlist,sceneryDecorator){
     "use strict";
     this.defaultVelocity = 1;
     this.currentScoringRate = 1;
@@ -6,11 +6,19 @@ var GameState = function(trafficManager,difficulty,healthBar){
     this.difficulty = difficulty;
     this.trafficManager = trafficManager;
     this.healthBar = healthBar;
+    this.playlist = playlist;
+    this.player = player;
+    this.sceneryDecorator = sceneryDecorator;
 }
 
-GameState.prototype.registerPlayer = function(sprite) {
+GameState.prototype.registerSceneManager = function(sceneManager) {
     "use strict";
-    this.player = sprite;
+    this.sceneManager = sceneManager;
+}
+
+GameState.prototype.registerTimeEvents = function(timeEvents) {
+    "use strict";
+    this.timeEvents = timeEvents;
 }
 
 GameState.prototype.registerBackground = function(tilesprite) {
@@ -55,6 +63,7 @@ GameState.prototype.addScore = function() {
 GameState.prototype.progressionStep = function() {
     "use strict";
     this.difficulty.levelUp();
+    this.player.setManeuverability(this.difficulty.getVelocityMultiplier());
 }
 
 GameState.prototype.detectCollision = function() {
@@ -67,17 +76,40 @@ GameState.prototype.detectCollision = function() {
 
 GameState.prototype.manageCollision = function() {
     "use strict";
+    this.player.damage();
     this.healthBar.decrease();
-    this.player.setFrame('player2.png');
-    this.camera.shake(200,0.01);
-    this.collisionImunity = true;
+    if(!this.player.isAlive()){
+        this.gameOver();
+    }
 
+    this.player.setDamagedFrame();
+    this.camera.shake(350,0.01);
+    this.collisionImunity = true;
+    this.timeEvents.addEvent({
+        'delay': 1500,
+        'loop': false,
+        'callback': function(){
+            this.collisionImunity = false;
+        },
+        'callbackScope': this
+    });
 }
 
 GameState.prototype.manageTraffic = function() {
     "use strict";
-    this.trafficManager.gameCycle(this.difficulty.getGenericDifficultyMultiplier(),this.difficulty.getVelocityMultiplier());
+    this.trafficManager.gameCycle(
+        this.difficulty.getLevel(),
+        this.difficulty.getGenericDifficultyMultiplier(),
+        this.difficulty.getVelocityMultiplier()
+    );
     if( this.detectCollision() ){
         this.manageCollision();
-    };
+    }
 }
+
+GameState.prototype.gameOver = function() {
+    "use strict";
+    this.playlist.stop();
+    this.sceneManager.stop('mainScene');
+    this.sceneManager.start('postGame');
+};

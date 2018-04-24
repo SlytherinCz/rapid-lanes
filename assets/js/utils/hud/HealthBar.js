@@ -1,21 +1,26 @@
 var HealthBar = function(lifes) {
     "use strict";
     this.lifes = lifes;
+    this.defaultLifes = lifes;
 }
 
 HealthBar.prototype.registerHeartsGroup = function(group,width){
     this.group = group;
-    var groupConfig = {
-        key: 'life',
-        repeat: this.lifes -1,
-        setXY: {
-            x: width - 20,
-            y: 20,
-            stepX: -35,
-            stepY: 0
-        }
+    this.width = width;
+    this.recreate();
+}
+HealthBar.prototype.recreate = function(){
+    for (var i = 0;i < this.lifes;i++) {
+        var lifeIcon = this.group.create(this.width - ((i + 1) * 35), 20, 'spritesheet');
+        lifeIcon.setFrame('life-icon.png');
+        lifeIcon.setDepth(1);
+        console.log(lifeIcon);
     }
-    this.group.createMultiple(groupConfig);
+}
+
+HealthBar.prototype.resetLifes = function(){
+    "use strict";
+    this.lifes = this.defaultLifes;
 }
 
 HealthBar.prototype.decrease = function() {

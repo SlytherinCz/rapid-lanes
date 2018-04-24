@@ -1,3 +1,3 @@
-var preGameStateUpdate = function(){
+var postGameStateUpdate = function(){
     "use strict";
 };

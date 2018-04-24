@@ -1,11 +1,14 @@
-var Difficulty = function(level){
+var Difficulty = function(level,maxLevel){
     "use strict";
     this.level = level;
+    this.maxLevel = maxLevel;
 }
 
 Difficulty.prototype.levelUp = function(){
     "use strict";
-    this.level++;
+    if(this.level < this.maxLevel){
+        this.level++;
+    }
 }
 
 Difficulty.prototype.getLevel = function(){
@@ -20,6 +23,5 @@ Difficulty.prototype.getVelocityMultiplier = function(){
 
 Difficulty.prototype.getGenericDifficultyMultiplier = function(){
     "use strict";
-    if(this.level > 10) return 10 / 1.37;
-    return this.level / 1.37;
+    return this.level / 1.17;
 }
