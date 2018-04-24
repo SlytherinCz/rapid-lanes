@@ -1,0 +1,21 @@
+{
+  "name": "rapid-lanes",
+  "version": "0.0.1",
+  "dependencies": {
+    "bottlejs": "1.7.0",
+    "phaser": "3.3.0"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-cli": "^1.2.0",
+    "grunt-spritesmith": "6.6.0",
+    "spritesmith-texturepacker": "1.0.0",
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-contrib-watch": "^0.6.1"
+  },
+  "scripts": {
+    "postinstall": ""
+  }
+}
